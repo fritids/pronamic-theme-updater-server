@@ -92,7 +92,7 @@ class Pronamic_Theme_Updater_Server {
 	 */
 	public function listen() {
 		// Checks the user agents match
-		if ( $this->user_agent == $this->request_user_agent ) {
+		//if ( $this->user_agent == $this->request_user_agent ) {
 			// Determine if a key request has been made
 			if ( isset( $_GET['key'] ) ) {
 				$this->download_update();
@@ -104,7 +104,9 @@ class Pronamic_Theme_Updater_Server {
 				if ( method_exists( $this, $action ) )
 					$this->{$action}();
 			}
-		}
+		//} else {
+		//	echo 'Listening!';
+		//}
 	}
 
 	/**
@@ -119,7 +121,6 @@ class Pronamic_Theme_Updater_Server {
 	public function download_update() {
 		// Get the secure key
 		$secureKey = $_GET['key'];
-
 		// Check the key is a valid key, and has a theme associated
 		if ( array_key_exists( $secureKey, $this->securePhrases ) ) {
 			// Get the theme name
@@ -127,7 +128,6 @@ class Pronamic_Theme_Updater_Server {
 
 			// Get the theme information
 			$theme = $this->themes[$themeName];
-
 			// Check the theme file exists
 			if ( file_exists( $theme['file'] ) ) {
 				// Get that theme files contents
@@ -135,10 +135,11 @@ class Pronamic_Theme_Updater_Server {
 
 				// Force the response to download the file.
 				header( "Content-type: application/force-download" );
-				header( "Content-Disposition: attachment; filename=\"" . str_replace( " ", "_", $themeName ) . "\"" );
+				header( "Content-Disposition: attachment; filename=\"" . str_replace( " ", "_", $theme['file_name'] ) . "\"" );
 
 				// fill those contents in the response
 				echo $file;
+				exit;
 			}
 		}
 	}
@@ -169,7 +170,7 @@ class Pronamic_Theme_Updater_Server {
 
 			// Check its version is greater than the requested version, and show theme data if so
 			if (version_compare( $arguments['version'], $theme['version'], '<' ) )
-				echo serialize( $data );
+				echo serialize( $theme );
 		}
 	}
 
@@ -208,6 +209,7 @@ class Pronamic_Theme_Updater_Server {
 
 		// Set the theme information
 		$themeData['new_version'] = $themeData['version'];
+		$themeData['file_name'] = $themeSlug . '.zip';
 		$this->themes[$themeSlug] = $themeData;
 
 		// Set the secure phrase
