@@ -1,18 +1,21 @@
 <?php
 
+
+
 // Get the server
 $theme_server = new Pronamic_Theme_Updater_Server();
 
 // Configuration
 $theme_server
-		->set_url( 'http://api.pronamic.nl/pronamic-theme-updater-server.php' )
+		->set_url( 'http://themes.pronamic.nl/index.php' )
 		->set_user_agent( 'PronamicWordpressThemeUpdate' );
 
 // Add a theme
 $theme_server
-		->add_theme( 'twentytwelve', 'flyingDolphin', array(
-			'file' => 'themes/twentytwelve.zip',
-			'version' => '1.2',
+		->add_theme( 'emg', 'flyingDolphin', array(
+			'file' => 'themes/emg.zip',
+			'file_name' => 'emg',
+			'version' => '1.3',
 			'url' => 'http://www.pronamic.nl'
 		) );
 
@@ -92,7 +95,7 @@ class Pronamic_Theme_Updater_Server {
 	 */
 	public function listen() {
 		// Checks the user agents match
-		if ( $this->user_agent == $this->request_user_agent ) {
+		//if ( $this->user_agent == $this->request_user_agent ) {
 			// Determine if a key request has been made
 			if ( isset( $_GET['key'] ) ) {
 				$this->download_update();
@@ -104,7 +107,7 @@ class Pronamic_Theme_Updater_Server {
 				if ( method_exists( $this, $action ) )
 					$this->{$action}();
 			}
-		}
+		//s}
 	}
 
 	/**
@@ -117,8 +120,10 @@ class Pronamic_Theme_Updater_Server {
 	 * @return echoed contents
 	 */
 	public function download_update() {
+
 		// Get the secure key
 		$secureKey = $_GET['key'];
+
 		// Check the key is a valid key, and has a theme associated
 		if ( array_key_exists( $secureKey, $this->securePhrases ) ) {
 			// Get the theme name
@@ -128,15 +133,18 @@ class Pronamic_Theme_Updater_Server {
 			$theme = $this->themes[$themeName];
 			// Check the theme file exists
 			if ( file_exists( $theme['file'] ) ) {
-				// Get that theme files contents
-				$file = file_get_contents( $theme['file'] );
 
-				// Force the response to download the file.
-				header( "Content-type: application/force-download" );
-				header( "Content-Disposition: attachment; filename=\"" . str_replace( " ", "_", $theme['file_name'] ) . "\"" );
+				if(ini_get('zlib.output_compression')) {
+					@ini_set('zlib.output_compression', 'Off');
+				}
 
-				// fill those contents in the response
-				echo $file;
+				header('Content-Type: application/zip');
+				header('Content-Disposition: attachment; filename="' . str_replace( " ", "_", $theme['file_name'] ) . '"');
+				header('Content-Transfer-Encoding: binary');
+				header("Content-Length: " . filesize( $theme['file'] ));
+				header("Content-MD5: " . md5(filesize( $theme['file'] )) );
+
+				readfile($theme['file']);
 				exit;
 			}
 		}
