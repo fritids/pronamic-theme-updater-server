@@ -95,7 +95,7 @@ class Pronamic_Theme_Updater_Server {
 	 */
 	public function listen() {
 		// Checks the user agents match
-		//if ( $this->user_agent == $this->request_user_agent ) {
+		if ( $this->user_agent == $this->request_user_agent ) {
 			// Determine if a key request has been made
 			if ( isset( $_GET['key'] ) ) {
 				$this->download_update();
@@ -107,7 +107,7 @@ class Pronamic_Theme_Updater_Server {
 				if ( method_exists( $this, $action ) )
 					$this->{$action}();
 			}
-		//s}
+		}
 	}
 
 	/**
